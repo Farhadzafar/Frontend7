@@ -1,0 +1,111 @@
+{/* Filter Section */}
+{/* Contains filter buttons for different categories */}
+{/* Each button toggles its filter state and shows/hides X icon */}
+
+{/* Sort Options Section */}
+{/* Displays sorting options in a card */}
+{/* Selected sort option gets highlighted with primary color */}
+{/* Buttons trigger setSelectedSort function on click */}
+
+<div className="lg:w-64 space-y-6">
+            <div className="lg:hidden">
+              <Button
+                variant="outline"
+                className="w-full justify-between"
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                <span className="flex items-center gap-2">
+                  <Filter className="w-4 h-4" />
+                  Filters
+                </span>
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${
+                    showFilters ? "rotate-180" : ""
+                  }`}
+                />
+              </Button>
+            </div>
+
+            <div
+              className={`space-y-6 ${
+                showFilters ? "block" : "hidden lg:block"
+              }`}
+            >
+              {/* Categories */}
+              <Card className="p-4">
+                <h3 className="font-semibold mb-4">Categories</h3>
+                <div className="space-y-2">
+                  {categories.map((category) => (
+                    <button
+                      key={category}
+                      onClick={() => setSelectedCategory(category)}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                        selectedCategory === category
+                          ? "bg-primary text-white"
+                          : "hover:bg-gray-100"
+                      }`}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+              </Card>
+
+              {/* Additional Filters */}
+              <Card className="p-4">
+                <h3 className="font-semibold mb-4">Filters</h3>
+                <div className="space-y-2">
+                  {[
+                    "Verified Answers",
+                    "With Video",
+                    "Most Helpful",
+                    "Recently Added",
+                  ].map((filter) => (
+                    <button
+                      key={filter}
+                      onClick={() => toggleFilter(filter)}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between ${
+                        activeFilters.includes(filter)
+                          ? "bg-primary/10 text-primary"
+                          : "hover:bg-gray-100"
+                      }`}
+                    >
+                      {filter}
+                      {activeFilters.includes(filter) && (
+                        <X
+                          className="w-4 h-4"
+                          onClick={() => toggleFilter(filter)}
+                        />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </Card>
+
+              {/* Sort Options */}
+              <Card className="p-4">
+                <h3 className="font-semibold mb-4">Sort By</h3>
+                <div className="space-y-2">
+                  {sortOptions.map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => setSelectedSort(option)}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                        selectedSort === option
+                          ? "bg-primary text-white"
+                          : "hover:bg-gray-100"
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </Card>
+            </div>
+          </div>
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+
