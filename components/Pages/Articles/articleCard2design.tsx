@@ -1,11 +1,4 @@
-import {
-  Calendar,
-  Clock,
-  Eye,
-  Heart,
-  MessageSquare,
-  ArrowRight,
-} from "lucide-react";
+import { Calendar, Clock, Eye, Heart, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -40,53 +33,49 @@ type ArticleCardProps = {
 
 export const ArticleCard2 = ({ article }: ArticleCardProps) => {
   return (
-    <Link href={`articles/${article.id}`}>
-      <Card className="overflow-hidden group hover:shadow-xl transition-all duration-300">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Image Section */}
-          <div className="relative h-64 lg:h-full">
-            <img
-              src={article.image}
-              alt={article.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            <div className="absolute top-4 left-4 flex gap-2">
-              <Badge text={article.category} color="primary" />
-              {article.status && <Badge text={article.status} />}
-            </div>
+    <Card className="overflow-hidden group hover:shadow-xl transition-all duration-300">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Image Section */}
+        <div className="relative h-64 lg:h-full">
+          <img
+            src={article.image}
+            alt={article.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          <div className="absolute top-4 left-4 flex gap-2">
+            <Badge text={article.category} color="primary" />
+            {article.status && <Badge text={article.status} />}
           </div>
+        </div>
 
-          {/* Content Section */}
-          <div className="p-6 lg:col-span-2">
-            <AuthorInfo author={article.author} />
-            <h3 className="text-xl font-semibold mb-3 group-hover:text-primary transition-colors">
-              {article.title}
-            </h3>
-            <p className="text-gray-600 mb-4 line-clamp-2">{article.excerpt}</p>
-            <TagList tags={article.tags} />
+        {/* Content Section */}
+        <div className="p-6 lg:col-span-2">
+          <AuthorInfo author={article.author} />
+          <h3 className="text-xl font-semibold mb-3 group-hover:text-primary transition-colors">
+            {article.title}
+          </h3>
+          <p className="text-gray-600 mb-4 line-clamp-2">{article.excerpt}</p>
+          <TagList tags={article.tags} />
 
-            <div className="flex items-center justify-between pt-4 border-t">
-              <MetaData
-                readTime={article.readTime}
-                publishDate={article.publishDate}
-              />
-              <div className="flex items-center gap-6">
-                <Stats
-                  views={article.views}
-                  likes={article.likes}
-                  comments={article.metrics.comments}
-                />
+          <div className="flex items-center justify-between pt-4 border-t">
+            <MetaData
+              readTime={article.readTime}
+              publishDate={article.publishDate}
+            />
+            <div className="flex items-center gap-6">
+              <Stats views={article.views} likes={article.likes} />
+              <Link href={`articles/${article.id}`}>
                 <Button variant="outline" size="sm" className="gap-2">
                   Read Article
                   <ArrowRight className="w-4 h-4" />
                 </Button>
-              </div>
+              </Link>
             </div>
           </div>
         </div>
-      </Card>
-    </Link>
+      </div>
+    </Card>
   );
 };
 
@@ -151,15 +140,7 @@ const MetaData = ({
   </div>
 );
 
-const Stats = ({
-  views,
-  likes,
-  comments,
-}: {
-  views: number;
-  likes: number;
-  comments: number;
-}) => (
+const Stats = ({ views, likes }: { views: number; likes: number }) => (
   <div className="flex items-center gap-4 text-gray-500">
     <span className="flex items-center gap-1">
       <Eye className="w-4 h-4" />
@@ -168,10 +149,6 @@ const Stats = ({
     <span className="flex items-center gap-1">
       <Heart className="w-4 h-4" />
       {likes}
-    </span>
-    <span className="flex items-center gap-1">
-      <MessageSquare className="w-4 h-4" />
-      {comments}
     </span>
   </div>
 );

@@ -91,30 +91,6 @@ This masterpiece has been translated into various languages and is considered on
         description: "Perfect for students and scholars alike",
       },
     ],
-    reviews: [
-      {
-        id: 1,
-        user: "Dr. Abdullah Ahmad",
-        avatar:
-          "https://ui-avatars.com/api/?name=Abdullah+Ahmad&background=random",
-        rating: 5,
-        date: "2 months ago",
-        review:
-          "An exceptional biography that presents the life of Prophet Muhammad ﷺ in a comprehensive yet accessible manner. The research is thorough and the writing style is engaging.",
-        helpful: 156,
-      },
-      {
-        id: 2,
-        user: "Sarah Mohammed",
-        avatar:
-          "https://ui-avatars.com/api/?name=Sarah+Mohammed&background=random",
-        rating: 5,
-        date: "3 months ago",
-        review:
-          "This book is a masterpiece in Seerah literature. The author has done an incredible job in presenting historical facts with authentic sources.",
-        helpful: 98,
-      },
-    ],
     relatedBooks: [
       {
         title: "Muhammad: His Life Based on the Earliest Sources",
@@ -270,86 +246,6 @@ This masterpiece has been translated into various languages and is considered on
                   </>
                 )}
               </Button>
-            </Card>
-
-            {/* Key Features */}
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-6">Key Features</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {book.features.map((feature, index) => {
-                  const Icon = feature.icon;
-                  return (
-                    <div key={index} className="flex items-start gap-4">
-                      <div className="p-3 rounded-lg bg-primary/10 text-primary">
-                        <Icon className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold mb-1">{feature.title}</h3>
-                        <p className="text-gray-600 text-sm">
-                          {feature.description}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </Card>
-
-            {/* Reviews */}
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold">Reviews</h2>
-                <Button>Write a Review</Button>
-              </div>
-
-              <div className="space-y-6">
-                {book.reviews.map((review) => (
-                  <div
-                    key={review.id}
-                    className="border-b last:border-0 pb-6 last:pb-0"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-4">
-                        <img
-                          src={review.avatar}
-                          alt={review.user}
-                          className="w-10 h-10 rounded-full"
-                        />
-                        <div>
-                          <h3 className="font-semibold">{review.user}</h3>
-                          <div className="flex items-center gap-2 mt-1">
-                            <div className="flex">
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className={`w-4 h-4 ${
-                                    i < review.rating
-                                      ? "text-yellow-500 fill-current"
-                                      : "text-gray-300"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <span className="text-sm text-gray-500">
-                              {review.date}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <p className="mt-4 text-gray-600">{review.review}</p>
-                    <div className="flex items-center gap-4 mt-4">
-                      <Button variant="outline" size="sm" className="gap-2">
-                        <Heart className="w-4 h-4" />
-                        Helpful ({review.helpful})
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        Report
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </Card>
           </div>
 
