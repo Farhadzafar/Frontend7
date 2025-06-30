@@ -6,21 +6,13 @@ import { Card } from "@/components/ui/card";
 import {
   Download,
   Share2,
-  Bookmark,
-  Clock,
-  User,
-  GraduationCap,
   FileText,
   Link as LinkIcon,
   ArrowLeft,
-  Heart,
-  MessageSquare,
   Eye,
   ChevronDown,
   ChevronUp,
-  ExternalLink,
   Globe,
-  BookOpen,
   Presentation as Citation,
   Calendar,
   Building2,
@@ -289,54 +281,6 @@ The findings suggest that Islamic finance continues to evolve and adapt to moder
                 ))}
               </div>
             </Card>
-
-            {/* Paper Sections */}
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-6">Paper Contents</h2>
-              <div className="space-y-6">
-                {paper.sections.map((section, index) => (
-                  <div
-                    key={index}
-                    className="border-b last:border-0 pb-6 last:pb-0"
-                  >
-                    <h3 className="text-lg font-medium mb-3">
-                      {section.title}
-                    </h3>
-                    <p className="text-gray-600">{section.content}</p>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            {/* Citations */}
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold">How to Cite</h2>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowCitation(!showCitation)}
-                >
-                  {showCitation ? "Hide Citations" : "Show Citations"}
-                </Button>
-              </div>
-
-              {showCitation && (
-                <div className="space-y-4">
-                  {paper.citations.map((citation, index) => (
-                    <div key={index} className="p-4 bg-gray-50 rounded-lg">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium">{citation.format}</span>
-                        <Button variant="ghost" size="sm" className="gap-2">
-                          <FileText className="w-4 h-4" />
-                          Copy
-                        </Button>
-                      </div>
-                      <p className="text-sm text-gray-600">{citation.text}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Card>
           </div>
 
           {/* Sidebar */}
@@ -393,26 +337,6 @@ The findings suggest that Islamic finance continues to evolve and adapt to moder
                   <span className="text-gray-600">License</span>
                   <span className="font-medium">{paper.metadata.license}</span>
                 </div>
-              </div>
-            </Card>
-
-            {/* Author Contact */}
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold mb-4">Contact Author</h2>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <Mail className="w-4 h-4 text-gray-400" />
-                  <a
-                    href={`mailto:${paper.author.email}`}
-                    className="text-sm text-primary hover:underline"
-                  >
-                    {paper.author.email}
-                  </a>
-                </div>
-                <Button variant="outline" className="w-full gap-2">
-                  <Mail className="w-4 h-4" />
-                  Contact Author
-                </Button>
               </div>
             </Card>
 

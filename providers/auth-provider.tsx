@@ -1,9 +1,17 @@
 "use client";
-
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 
+const API_ENDPOINT = `${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/users`;
+
+// ====== Types ======
 type User = {
   id: number;
   fullName: string;
@@ -16,9 +24,9 @@ type User = {
 
 type AuthContextType = {
   user: User | null;
-  login: (username: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean>;
   signup: (
-    username: string,
+    fullName: string,
     email: string,
     password: string
   ) => Promise<boolean>;
@@ -28,80 +36,83 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+// ====== Provider ======
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
   const { toast } = useToast();
-  console.log("12321 user in auth provider", user?.email);
 
+  // Load user from localStorage
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser).user);
+      try {
+        const parsed = JSON.parse(storedUser);
+        if (parsed.user) setUser(parsed.user);
+      } catch (e) {
+        console.warn("Invalid user in localStorage");
+      }
     }
     setIsLoading(false);
   }, []);
 
+  // Handle route protections
   useEffect(() => {
-    // Protected routes logic
-    if (!isLoading) {
-      // Allow access to auth pages when logged out
-      if (!user && pathname.startsWith("/admin")) {
-        router.push("/auth/sign-in");
-        toast({
-          title: "Authentication required",
-          description: "Please login to access this page",
-          variant: "destructive",
-        });
-      }
+    if (isLoading) return;
 
-      // Redirect from auth pages when logged in
-      if (user && pathname.startsWith("/auth")) {
-        router.push("/");
-      }
+    const isAdminRoute = pathname.startsWith("/admin");
+    const isAuthRoute = pathname.startsWith("/auth");
+
+    if (!user && isAdminRoute) {
+      toast({
+        title: "Authentication required",
+        description: "Please login to access this page",
+        variant: "destructive",
+      });
+      router.push("/auth/sign-in");
+    } else if (user && isAuthRoute) {
+      router.push("/");
     }
-  }, [user, pathname, isLoading, router, toast]);
+  }, [user, pathname, isLoading, toast, router]);
 
-  const login = async (email: string, password: string) => {
-    const url = `https://final-year-backend-project.onrender.com/api/users/login`;
+  // ====== Actions ======
+
+  const login = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsLoading(true);
-      // const response = await fetch("https://dummyjson.com/auth/login", {
-      const response = await fetch(url, {
+      const res = await fetch(`${API_ENDPOINT}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      // console.log("❤️❤️❤️ the the response", url);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-
+      if (!res.ok) {
+        const errorData = await res.json();
         toast({
           title: "Login failed",
           description: errorData.message || "Invalid credentials",
           variant: "destructive",
         });
-        setIsLoading(false);
         return false;
       }
 
-      const userData = await response.json();
-      setUser(userData.user);
-      localStorage.setItem("user", JSON.stringify(userData));
+      const data = await res.json();
+      setUser(data.user);
+      localStorage.setItem("user", JSON.stringify(data));
+
       toast({
         title: "Login successful",
-        description: "Welcome to the admin panel",
+        description: "Welcome back!",
       });
       router.push("/admin");
       return true;
-    } catch (error) {
-      console.error("Login error:", error);
+    } catch (err) {
+      console.error("Login error", err);
       toast({
         title: "Login failed",
-        description: "An unexpected error occurred",
+        description: "Something went wrong. Please try again.",
         variant: "destructive",
       });
       return false;
@@ -110,42 +121,40 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const signup = async (username: string, email: string, password: string) => {
+  const signup = async (
+    fullName: string,
+    email: string,
+    password: string
+  ): Promise<boolean> => {
     try {
       setIsLoading(true);
-      const url = `https://final-year-backend-project.onrender.com/api/users/register`;
-      const response = await fetch(url, {
+      const res = await fetch(`${API_ENDPOINT}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullName: username,
-          email,
-          password,
-        }),
+        body: JSON.stringify({ fullName, email, password }),
       });
-      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (!res.ok) {
+        const errorData = await res.json();
         toast({
           title: "Signup failed",
           description: errorData.message || "Please try again",
           variant: "destructive",
         });
-        setIsLoading(false);
         return false;
       }
+
       toast({
         title: "Signup successful",
-        description: "Your account has been created. You can now login.",
+        description: "Account created. Please login.",
       });
       router.push("/auth/sign-in");
       return true;
-    } catch (error) {
-      console.error("Signup error:", error);
+    } catch (err) {
+      console.error("Signup error", err);
       toast({
         title: "Signup failed",
-        description: "An unexpected error occurred",
+        description: "Something went wrong. Please try again.",
         variant: "destructive",
       });
       return false;
@@ -157,11 +166,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
-    router.push("/auth/sign-in");
     toast({
       title: "Logged out",
-      description: "You have been logged out successfully",
+      description: "You have been logged out successfully.",
     });
+    router.push("/auth/sign-in");
   };
 
   return (
@@ -171,10 +180,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export const useAuth = () => {
+// ====== Hook ======
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };

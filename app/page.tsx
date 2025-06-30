@@ -7,34 +7,36 @@ import RecentAnswers from "@/components/Pages/Home/answer";
 import RecentArticlesSection from "@/components/Pages/Books/recentArticlesSection";
 import FeatuersBookSection from "@/components/Pages/Books/featuersBookSection";
 
+
 export default function Home() {
   return (
-    <main className="min-h-screen">
-      {/* Hero Section  */}
-      <Hero />
+    
+      <main className="min-h-screen">
+        {/* Hero Section  */}
+        <Hero />
 
-      {/* Stats Section */}
-      <Stats />
+        {/* Stats Section */}
+        <Stats />
 
-      {/* Categories Section */}
-      <Categories />
-      {/* Recent Questions Section */}
-      <RecentAnswers />
-      {/* Featured Books Section */}
-      <FeatuersBookSection />
+        {/* Categories Section */}
+        <Categories />
+        {/* Recent Questions Section */}
+        <RecentAnswers />
+        {/* Featured Books Section */}
+        <FeatuersBookSection />
 
-      {/* Recent Articles Section */}
-      <RecentArticlesSection />
+        {/* Recent Articles Section */}
+        <RecentArticlesSection />
 
-      {/* Services Section */}
-      <Services />
+        {/* Services Section */}
+        <Services />
 
-      {/* Call to Action Section */}
-      <CallToAction
-        title="Start Your Journey of Islamic Learning Today"
-        description="Join thousands of students worldwide who are discovering the beauty of Islamic knowledge through our platform."
-        action="Get Started"
-      />
-    </main>
+        {/* Call to Action Section */}
+        <CallToAction
+          title="Start Your Journey of Islamic Learning Today"
+          description="Join thousands of students worldwide who are discovering the beauty of Islamic knowledge through our platform."
+          action="Get Started"
+        />
+      </main>
   );
 }
