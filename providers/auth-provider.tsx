@@ -1,3 +1,4 @@
+// context/AuthProvider.tsx
 "use client";
 import {
   createContext,
@@ -11,15 +12,15 @@ import { useToast } from "@/hooks/use-toast";
 
 const API_ENDPOINT = `${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/users`;
 
-// ====== Types ======
+// ===== Types =====
 type User = {
-  id: number;
-  fullName: string;
+  id?: number;
+  fullName?: string;
   email: string;
-  image: string;
-  token: string;
-  role: "admin" | "user";
-  createdAt: string;
+  image?: string;
+  token?: string;
+  role?: "admin" | "user";
+  createdAt?: string;
 };
 
 type AuthContextType = {
@@ -31,57 +32,58 @@ type AuthContextType = {
     password: string
   ) => Promise<boolean>;
   logout: () => void;
+  verifyEmail: (code: string) => Promise<boolean>;
   isLoading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// ====== Provider ======
+// ===== Provider =====
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
   const { toast } = useToast();
+  const [userEmail, setUserEmail] = useState("");
 
-  // Load user from localStorage
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
         const parsed = JSON.parse(storedUser);
         if (parsed.user) setUser(parsed.user);
-      } catch (e) {
-        console.warn("Invalid user in localStorage");
+      } catch {
+        console.warn("❌ Invalid user data in localStorage");
       }
     }
     setIsLoading(false);
   }, []);
 
-  // Handle route protections
   useEffect(() => {
     if (isLoading) return;
 
     const isAdminRoute = pathname.startsWith("/admin");
     const isAuthRoute = pathname.startsWith("/auth");
 
-    if (!user && isAdminRoute) {
+    if (!user?.email && isAdminRoute) {
       toast({
         title: "Authentication required",
         description: "Please login to access this page",
         variant: "destructive",
       });
       router.push("/auth/sign-in");
-    } else if (user && isAuthRoute) {
+    }
+
+    if (user && isAuthRoute) {
       router.push("/");
     }
-  }, [user, pathname, isLoading, toast, router]);
+  }, [user, pathname, isLoading, router, toast]);
 
-  // ====== Actions ======
-
+  // ===== Login =====
   const login = async (email: string, password: string): Promise<boolean> => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       const res = await fetch(`${API_ENDPOINT}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -101,15 +103,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const data = await res.json();
       setUser(data.user);
       localStorage.setItem("user", JSON.stringify(data));
-
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
-      });
+      toast({ title: "Login successful", description: "Welcome back!" });
       router.push("/admin");
       return true;
     } catch (err) {
-      console.error("Login error", err);
       toast({
         title: "Login failed",
         description: "Something went wrong. Please try again.",
@@ -121,13 +118,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // ===== Signup =====
   const signup = async (
     fullName: string,
     email: string,
     password: string
   ): Promise<boolean> => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
+      // // Store the email temporarily for verification
+      // setUser({ email }); // ✅ Email now available in context
+      console.log(fullName, email, password);
+      setUserEmail(email);
       const res = await fetch(`${API_ENDPOINT}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -138,7 +140,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const errorData = await res.json();
         toast({
           title: "Signup failed",
-          description: errorData.message || "Please try again",
+          description: errorData.message || "Please try again.",
           variant: "destructive",
         });
         return false;
@@ -146,15 +148,67 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       toast({
         title: "Signup successful",
-        description: "Account created. Please login.",
+        description: "Please verify your email",
       });
-      router.push("/auth/sign-in");
+
+      router.push("/auth/verify");
       return true;
     } catch (err) {
-      console.error("Signup error", err);
       toast({
         title: "Signup failed",
         description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ===== Verify Email =====
+  const verifyEmail = async (code: string): Promise<boolean> => {
+    if (!userEmail) {
+      toast({
+        title: "Missing email",
+        description: "No email found for verification.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_ENDPOINT}/verify-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: userEmail,
+          code,
+        }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        toast({
+          title: "Verification failed",
+          description: result.message || "Invalid code",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      toast({
+        title: "Email Verified",
+        description: "Your email has been successfully verified.",
+      });
+
+      router.push("/auth/sign-in");
+      return true;
+    } catch (err) {
+      toast({
+        title: "Verification Error",
+        description: "Something went wrong while verifying",
         variant: "destructive",
       });
       return false;
@@ -174,15 +228,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, isLoading }}>
+    <AuthContext.Provider
+      value={{ user, login, signup, logout, verifyEmail, isLoading }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-// ====== Hook ======
+// ===== Hook =====
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within an AuthProvider");
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 };
