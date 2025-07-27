@@ -1,24 +1,22 @@
 "use client";
-// this use client should be to using in the page
-import FeatuersBookSection from "@/components/Pages/Books/featuersBookSection";
-import { PageHeader } from "@/components/Pages/pageHeader";
+import BookPageClient from "@/components/Pages/Books/BookPageCleint";
 import Section from "@/components/ui/section";
+import { getLanguages } from "@/lib/data/articles";
+import { getCategories, getSortOptions } from "@/lib/data/books";
 import React from "react";
 
-export default function Page() {
+export default async function Page() {
+  const categories = await getCategories();
+  const languages = await getLanguages();
+  const sortBy = await getSortOptions();
+
   return (
     <Section>
-      <div>
-        <PageHeader
-          title="All Books"
-          description="Access your bookmarked questions, articles, and resources"
-          isviewMode={false}
-          onSearch={(value) => console.log("Search:", value)}
-          onSortChange={(value) => console.log("Sort By:", value)}
-          onCategoryChange={(value) => console.log("Category:", value)}
-        />
-      </div>
-      <FeatuersBookSection />
+      <BookPageClient
+        categories={categories}
+        languages={languages}
+        sortBy={sortBy}
+      />
     </Section>
   );
 }

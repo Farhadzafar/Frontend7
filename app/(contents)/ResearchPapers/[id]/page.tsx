@@ -1,156 +1,109 @@
 "use client";
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
   Download,
   Share2,
-  Bookmark,
-  Clock,
-  User,
-  GraduationCap,
   FileText,
-  Link as LinkIcon,
   ArrowLeft,
-  Heart,
-  MessageSquare,
   Eye,
   ChevronDown,
   ChevronUp,
-  ExternalLink,
   Globe,
-  BookOpen,
-  Presentation as Citation,
   Calendar,
   Building2,
-  BarChart,
   BookmarkPlus,
-  Mail,
   Printer,
   Flag,
 } from "lucide-react";
 import Link from "next/link";
+import { toast } from "@/hooks/use-toast";
+import { getResearchById } from "@/lib/data/research";
+import { useParams } from "next/navigation";
 
-export default function ResearchPaperDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const [isAbstractExpanded, setIsAbstractExpanded] = useState(false);
-  const [showCitation, setShowCitation] = useState(false);
-
-  // Mock data - In a real app, fetch this based on params.id
-  const paper = {
-    title:
-      "Contemporary Applications of Islamic Finance: A Comprehensive Analysis",
-    abstract: `This research paper examines the modern applications of Islamic finance principles in contemporary financial markets. The study analyzes the compatibility of various financial instruments with Shariah law and their effectiveness in meeting the needs of Muslim investors and businesses.
-
-The research methodology combines qualitative analysis of Shariah principles with quantitative assessment of financial performance data. Key areas of focus include:
-
-1. Sukuk (Islamic bonds) structures and their market performance
-2. Islamic banking products and services
-3. Shariah-compliant investment vehicles
-4. Fintech applications in Islamic finance
-5. Regulatory frameworks and governance
-
-The findings suggest that Islamic finance continues to evolve and adapt to modern financial needs while maintaining compliance with Shariah principles. The paper also identifies areas for potential innovation and development in the field.`,
-    author: {
-      name: "Dr. Sarah Mohammed",
-      title: "Professor of Islamic Finance",
-      institution: "Oxford Centre for Islamic Studies",
-      email: "sarah.mohammed@oxford.example.com",
-      bio: "Dr. Sarah Mohammed has over 15 years of experience in Islamic Finance research and has published numerous papers in leading academic journals. Her work focuses on the intersection of traditional Islamic financial principles and modern financial markets.",
-      avatar:
-        "https://ui-avatars.com/api/?name=Sarah+Mohammed&background=random",
-    },
-    metadata: {
-      published: "February 15, 2024",
-      doi: "10.1234/islamic.finance.2024",
-      pages: 45,
-      format: "PDF",
-      language: "English",
-      license: "Creative Commons Attribution 4.0",
-      citations: 78,
-      downloads: 2300,
-      views: 5600,
-    },
-    keywords: [
-      "Islamic Finance",
-      "Shariah Compliance",
-      "Sukuk",
-      "Islamic Banking",
-      "Financial Markets",
-      "Fintech",
-    ],
-    citations: [
-      {
-        text: "Mohammed, S. (2024). Contemporary Applications of Islamic Finance: A Comprehensive Analysis. Journal of Islamic Finance, 15(2), 123-168.",
-        format: "APA",
-      },
-      {
-        text: "Mohammed, Sarah. 'Contemporary Applications of Islamic Finance: A Comprehensive Analysis.' Journal of Islamic Finance 15.2 (2024): 123-168.",
-        format: "MLA",
-      },
-      {
-        text: "Mohammed S. Contemporary Applications of Islamic Finance: A Comprehensive Analysis. J Islamic Finance. 2024;15(2):123-168.",
-        format: "Chicago",
-      },
-    ],
-    sections: [
-      {
-        title: "Introduction",
-        content:
-          "The field of Islamic finance has experienced significant growth...",
-      },
-      {
-        title: "Literature Review",
-        content: "Previous studies have examined various aspects...",
-      },
-      {
-        title: "Methodology",
-        content: "This research employs a mixed-methods approach...",
-      },
-      {
-        title: "Results",
-        content: "The analysis reveals several key findings...",
-      },
-      {
-        title: "Discussion",
-        content: "The implications of these findings suggest...",
-      },
-    ],
-    relatedPapers: [
-      {
-        title: "Evolution of Islamic Banking Systems",
-        author: "Dr. Ahmad Al-Razi",
-        institution: "International Islamic University",
-        citations: 45,
-        year: "2023",
-      },
-      {
-        title: "Fintech Innovation in Islamic Finance",
-        author: "Prof. Aisha Rahman",
-        institution: "Harvard University",
-        citations: 62,
-        year: "2024",
-      },
-      {
-        title: "Shariah-Compliant Investment Strategies",
-        author: "Dr. Mohammed Al-Bukhari",
-        institution: "Islamic University of Madinah",
-        citations: 34,
-        year: "2023",
-      },
-    ],
+// Define interface for better type safety
+interface ResearchPaper {
+  _id: string;
+  title: string;
+  abstract: string;
+  authors: {
+    fullName: string;
+    bio: string;
+    affiliation: string;
   };
+  category: {
+    name: string;
+    _id: string;
+  };
+  language: string;
+  status: string;
+  fileUrl: string;
+  fileSize: string;
+  pageCount: number;
+  uploadedBy: {
+    email: string;
+    fullName: string;
+    _id: string;
+  };
+  publishedDate: string;
+  downloadCount: number;
+  keywords: string[];
+  createdAt: string;
+}
 
+export default function ResearchPaperDetailPage() {
+  const [paper, setPaper] = useState<ResearchPaper | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isAbstractExpanded, setIsAbstractExpanded] = useState(false);
+  const { id } = useParams();
+  useEffect(() => {
+    async function fetchPaper() {
+      try {
+        if (typeof id === "string") {
+          const response = await getResearchById(id);
+          setPaper(response.data);
+        } else {
+          throw new Error("Invalid research paper ID.");
+        }
+      } catch (err: any) {
+        setError(err.message || "Failed to load research");
+        toast({
+          title: "Error",
+          description: err.message || "Failed to load research",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchPaper();
+  }, [id]);
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen flex items-center justify-center text-gray-600">
+        Loading research paper...
+      </main>
+    );
+  }
+
+  if (error || !paper) {
+    return (
+      <main className="min-h-screen flex items-center justify-center text-red-600">
+        Failed to load research paper.
+      </main>
+    );
+  }
+
+  console.log("✈️✈️✈️✈️✈️", paper);
   return (
     <main className="min-h-screen bg-gray-50 py-8">
       {/* Back Button - Mobile */}
-      <div className="lg:hidden max-w-7xl mx-auto px-4 mb-4">
+      <div className="max-w-7xl mx-auto px-4 mb-4">
         <Button variant="ghost" className="gap-2" asChild>
-          <Link href="/books">
+          <Link href="/ResearchPapers">
             <ArrowLeft className="w-4 h-4" />
             Back to Research Papers
           </Link>
@@ -169,30 +122,25 @@ The findings suggest that Islamic finance continues to evolve and adapt to moder
                 </span>
                 <span className="flex items-center gap-1 text-sm text-gray-500">
                   <Calendar className="w-4 h-4" />
-                  {paper.metadata.published}
+                  {new Date(paper.publishedDate).toLocaleDateString()}
                 </span>
                 <span className="flex items-center gap-1 text-sm text-gray-500">
                   <FileText className="w-4 h-4" />
-                  {paper.metadata.pages} pages
+                  {paper.pageCount} pages
                 </span>
               </div>
 
               <h1 className="text-3xl font-bold mb-6">{paper.title}</h1>
 
               {/* Author Info */}
-              <div className="flex items-center gap-4 mb-6">
-                <img
-                  src={paper.author.avatar}
-                  alt={paper.author.name}
-                  className="w-12 h-12 rounded-full"
-                />
-                <div>
-                  <h3 className="font-semibold">{paper.author.name}</h3>
-                  <p className="text-sm text-gray-600">{paper.author.title}</p>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Building2 className="w-4 h-4" />
-                    {paper.author.institution}
-                  </div>
+              <div className="mb-6">
+                <h3 className="font-semibold text-lg">
+                  {paper.authors.fullName}
+                </h3>
+                <p className="text-sm text-gray-600">{paper.authors.bio}</p>
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Building2 className="w-4 h-4" />
+                  {paper.authors.affiliation}
                 </div>
               </div>
 
@@ -200,37 +148,22 @@ The findings suggest that Islamic finance continues to evolve and adapt to moder
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-2 text-primary mb-1">
-                    <Citation className="w-5 h-5" />
-                    <span className="font-semibold">
-                      {paper.metadata.citations}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600">Citations</p>
-                </div>
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-2 text-primary mb-1">
                     <Download className="w-5 h-5" />
-                    <span className="font-semibold">
-                      {paper.metadata.downloads}
-                    </span>
+                    <span className="font-semibold">{paper.downloadCount}</span>
                   </div>
                   <p className="text-sm text-gray-600">Downloads</p>
                 </div>
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-2 text-primary mb-1">
                     <Eye className="w-5 h-5" />
-                    <span className="font-semibold">
-                      {paper.metadata.views}
-                    </span>
+                    <span className="font-semibold">0</span>
                   </div>
                   <p className="text-sm text-gray-600">Views</p>
                 </div>
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-2 text-primary mb-1">
                     <Globe className="w-5 h-5" />
-                    <span className="font-semibold">
-                      {paper.metadata.language}
-                    </span>
+                    <span className="font-semibold">{paper.language}</span>
                   </div>
                   <p className="text-sm text-gray-600">Language</p>
                 </div>
@@ -245,13 +178,10 @@ The findings suggest that Islamic finance continues to evolve and adapt to moder
                   !isAbstractExpanded && "max-h-[200px] overflow-hidden"
                 }`}
               >
-                <div className="prose max-w-none">
-                  {paper.abstract.split("\n\n").map((paragraph, index) => (
-                    <p key={index} className="mb-4">
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
+                <div
+                  className="prose max-w-none"
+                  dangerouslySetInnerHTML={{ __html: paper.abstract }}
+                />
                 {!isAbstractExpanded && (
                   <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent" />
                 )}
@@ -279,63 +209,19 @@ The findings suggest that Islamic finance continues to evolve and adapt to moder
             <Card className="p-6">
               <h2 className="text-xl font-semibold mb-4">Keywords</h2>
               <div className="flex flex-wrap gap-2">
-                {paper.keywords.map((keyword, index) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
-                  >
-                    {keyword}
-                  </span>
-                ))}
+                {paper.keywords.length > 0 ? (
+                  paper.keywords.map((kw, idx) => (
+                    <span
+                      key={idx}
+                      className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
+                    >
+                      {kw}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No keywords provided.</p>
+                )}
               </div>
-            </Card>
-
-            {/* Paper Sections */}
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-6">Paper Contents</h2>
-              <div className="space-y-6">
-                {paper.sections.map((section, index) => (
-                  <div
-                    key={index}
-                    className="border-b last:border-0 pb-6 last:pb-0"
-                  >
-                    <h3 className="text-lg font-medium mb-3">
-                      {section.title}
-                    </h3>
-                    <p className="text-gray-600">{section.content}</p>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-            {/* Citations */}
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold">How to Cite</h2>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowCitation(!showCitation)}
-                >
-                  {showCitation ? "Hide Citations" : "Show Citations"}
-                </Button>
-              </div>
-
-              {showCitation && (
-                <div className="space-y-4">
-                  {paper.citations.map((citation, index) => (
-                    <div key={index} className="p-4 bg-gray-50 rounded-lg">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium">{citation.format}</span>
-                        <Button variant="ghost" size="sm" className="gap-2">
-                          <FileText className="w-4 h-4" />
-                          Copy
-                        </Button>
-                      </div>
-                      <p className="text-sm text-gray-600">{citation.text}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
             </Card>
           </div>
 
@@ -343,9 +229,16 @@ The findings suggest that Islamic finance continues to evolve and adapt to moder
           <div className="space-y-8">
             {/* Download & Actions */}
             <Card className="p-6">
-              <Button className="w-full gap-2 mb-4">
-                <Download className="w-4 h-4" />
-                Download Paper
+              <Button className="w-full gap-2 mb-4" asChild>
+                <a
+                  href={`${process.env.NEXT_PUBLIC_API_ENDPOINT}${paper.fileUrl}`}
+                  download
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Download className="w-4 h-4" />
+                  Download Paper
+                </a>
               </Button>
               <div className="grid grid-cols-2 gap-3">
                 <Button variant="outline" className="gap-2">
@@ -370,76 +263,25 @@ The findings suggest that Islamic finance continues to evolve and adapt to moder
             {/* Paper Details */}
             <Card className="p-6">
               <h2 className="text-lg font-semibold mb-4">Paper Details</h2>
-              <div className="space-y-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">DOI</span>
-                  <span className="font-medium">{paper.metadata.doi}</span>
+              <div className="space-y-4 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Category</span>
+                  <span className="font-medium">{paper.category.name}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Published</span>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">File Size</span>
+                  <span className="font-medium">{paper.fileSize}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Upload by</span>
                   <span className="font-medium">
-                    {paper.metadata.published}
+                    {paper.uploadedBy?.fullName ?? ""}
                   </span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Pages</span>
-                  <span className="font-medium">{paper.metadata.pages}</span>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Status</span>
+                  <span className="font-medium capitalize">{paper.status}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Format</span>
-                  <span className="font-medium">{paper.metadata.format}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">License</span>
-                  <span className="font-medium">{paper.metadata.license}</span>
-                </div>
-              </div>
-            </Card>
-
-            {/* Author Contact */}
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold mb-4">Contact Author</h2>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <Mail className="w-4 h-4 text-gray-400" />
-                  <a
-                    href={`mailto:${paper.author.email}`}
-                    className="text-sm text-primary hover:underline"
-                  >
-                    {paper.author.email}
-                  </a>
-                </div>
-                <Button variant="outline" className="w-full gap-2">
-                  <Mail className="w-4 h-4" />
-                  Contact Author
-                </Button>
-              </div>
-            </Card>
-
-            {/* Related Papers */}
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold mb-4">Related Papers</h2>
-              <div className="space-y-4">
-                {paper.relatedPapers.map((relatedPaper, index) => (
-                  <div key={index} className="group cursor-pointer">
-                    <h3 className="font-medium group-hover:text-primary transition-colors">
-                      {relatedPaper.title}
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-1">
-                      {relatedPaper.author}
-                    </p>
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <Building2 className="w-4 h-4" />
-                        {relatedPaper.institution}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <BarChart className="w-4 h-4" />
-                        {relatedPaper.citations} citations
-                      </span>
-                    </div>
-                  </div>
-                ))}
               </div>
             </Card>
           </div>

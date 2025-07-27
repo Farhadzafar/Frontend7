@@ -5,6 +5,8 @@ import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/providers/auth-provider";
+import TopBar from "@/components/layout/topBar";
+import { LanguageProvider } from "@/providers/lang-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,12 +23,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} overflow-x-hidden`}>
+        <LanguageProvider>
         <AuthProvider>
+          <TopBar/>
           <Header />
           {children}
         </AuthProvider>
         <Toaster />
         <Footer />
+        </LanguageProvider>
       </body>
     </html>
   );
